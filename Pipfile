@@ -11,9 +11,12 @@ djangorestframework = "*"
 environs = "*"
 psycopg2-binary = "*"
 gunicorn = "*"
+djangorestframework-simplejwt = "*"
 
 [dev-packages]
 ipython = "*"
+reloadium = "*"
+
 
 [requires]
 python_version = "3.11"
