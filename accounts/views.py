@@ -22,6 +22,8 @@ from .serializers import (
     PasswordResetCompleteSerializer
 )
 
+from config.infisical import inf_secret
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,7 +65,7 @@ class PasswordResetInitiateView(CustomResponseMixin, APIView):
 
             if not Account.objects.filter(email=email).exists():
                 return Response(
-                    {'status': 'error', 'message': 'Email does not exist'},
+                    {'detail': 'Email does not exist'},
                     status=status.HTTP_404_NOT_FOUND
                 )
             
@@ -74,10 +76,10 @@ class PasswordResetInitiateView(CustomResponseMixin, APIView):
             send_mail(
                 'Your OTP for Password Reset',
                 f'Your OTP code is {otp_code}',
-                'noreply@example.com',
+                inf_secret('EMAIL_FROM_ADDRESS'),
                 [email]
             )
-            return Response({'status': 'success', 'message': 'OTP sent to your email'}, status=status.HTTP_200_OK)
+            return Response({'detail': 'OTP sent to your email'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordResetCompleteView(CustomResponseMixin, APIView):
@@ -91,7 +93,7 @@ class PasswordResetCompleteView(CustomResponseMixin, APIView):
                 )
                 if otp.expires_at < now():
                     logger.warning(f"Expired OTP for {otp.email}")
-                    return Response({'status': 'success', 'message': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'detail': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
                 account = Account.objects.get(email=serializer.validated_data['email'])
                 account.password = make_password(serializer.validated_data['new_password'])
                 account.save()
@@ -99,5 +101,5 @@ class PasswordResetCompleteView(CustomResponseMixin, APIView):
                 access_token = generate_access_token(account)
                 return Response({'email': account.email, 'access_token': access_token}, status=status.HTTP_200_OK)
             except (OTP.DoesNotExist, Account.DoesNotExist):
-                return Response({'status': 'error', 'message': 'Invalid OTP or email'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'detail': 'Invalid OTP or email'}, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
