@@ -2,21 +2,30 @@
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
+
 def custom_exception_handler(exc, context):
-    # Let DRF handle the exception first
     response = exception_handler(exc, context)
     
     if response is not None:
-        # Customize the response format
+        errors = []
+        if isinstance(response.data, dict):
+            for key, value in response.data.items():
+                if isinstance(value, list):
+                    errors.extend(value)
+                else:
+                    errors.append(str(value))
+        else:
+            errors.append(str(response.data))
+        
         return custom_response(
             data=None,
-            message=str(exc.detail if hasattr(exc, 'detail') else exc),
-            errors=response.data if isinstance(response.data, dict) else [str(exc)],
+            message=response.data.get("detail", "An unexpected error occurred.")
+            if isinstance(response.data, dict) else "An unexpected error occurred.",
+            errors=errors,
             status="error",
             status_code=response.status_code
         )
 
-    # Fallback for unhandled exceptions
     return custom_response(
         data=None,
         message="An unexpected error occurred.",
