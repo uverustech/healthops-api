@@ -38,7 +38,7 @@ class CreateAccountWithEmailView(CustomResponseMixin, APIView):
             try:
                 account = serializer.save()
                 access_token = generate_access_token(account)
-                return Response({'email': account.email, 'access_token': access_token}, status=status.HTTP_201_CREATED)
+                return Response({'email': account.email, 'access_token': access_token, 'detail': 'Account created successfully'}, status=status.HTTP_201_CREATED)
             except:
                 return Response({'detail': 'Account with email already exists'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -51,7 +51,7 @@ class LoginWithEmailView(CustomResponseMixin, APIView):
                 account = Account.objects.get(email=serializer.validated_data['email'])
                 if check_password(serializer.validated_data['password'], account.password):
                     access_token = generate_access_token(account)
-                    return Response({'email': account.email, 'access_token': access_token}, status=status.HTTP_200_OK)
+                    return Response({'email': account.email, 'access_token': access_token, 'detail': 'Account logged in successfully'}, status=status.HTTP_200_OK)
                 return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
             except account.DoesNotExist:
                 return Response({'detail': 'Account not found'}, status=status.HTTP_404_NOT_FOUND)
