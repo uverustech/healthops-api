@@ -14,6 +14,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Account
 from misc.models import OTP
+from misc.mixins import CustomResponseMixin
 from .serializers import (
     CreateAccountWithEmailSerializer,
     LoginWithEmailSerializer,
@@ -28,7 +29,7 @@ def generate_access_token(account):
     refresh = RefreshToken.for_user(account)
     return str(refresh.access_token)
 
-class CreateAccountWithEmailView(APIView):
+class CreateAccountWithEmailView(CustomResponseMixin, APIView):
     def post(self, request):
         serializer = CreateAccountWithEmailSerializer(data=request.data)
         if serializer.is_valid():
@@ -40,7 +41,7 @@ class CreateAccountWithEmailView(APIView):
                 return Response({'detail': 'Account with email already exists'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class LoginWithEmailView(APIView):
+class LoginWithEmailView(CustomResponseMixin, APIView):
     def post(self, request):
         serializer = LoginWithEmailSerializer(data=request.data)
         if serializer.is_valid():
@@ -54,7 +55,7 @@ class LoginWithEmailView(APIView):
                 return Response({'detail': 'Account not found'}, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class PasswordResetInitiateView(APIView):
+class PasswordResetInitiateView(CustomResponseMixin, APIView):
     def post(self, request):
         serializer = PasswordResetInitiateSerializer(data=request.data)
         if serializer.is_valid():
@@ -79,7 +80,7 @@ class PasswordResetInitiateView(APIView):
             return Response({'status': 'success', 'message': 'OTP sent to your email'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class PasswordResetCompleteView(APIView):
+class PasswordResetCompleteView(CustomResponseMixin, APIView):
     def post(self, request):
         serializer = PasswordResetCompleteSerializer(data=request.data)
         if serializer.is_valid():
