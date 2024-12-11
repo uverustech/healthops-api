@@ -11,6 +11,7 @@ djangorestframework = "*"
 environs = "*"
 psycopg2-binary = "*"
 gunicorn = "*"
+djangorestframework-simplejwt = "*"
 
 [dev-packages]
 ipython = "*"
